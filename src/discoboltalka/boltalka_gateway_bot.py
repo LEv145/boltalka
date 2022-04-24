@@ -9,6 +9,7 @@ from discoboltalka.boltalka_api import (
     BoltalkaAPI,
     ValidationError,
 )
+from discoboltalka.utils.discord import clean_content
 
 
 _logger = logging.getLogger("discoboltalka.boltalka_gateway_bot")
@@ -22,21 +23,21 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
         self.subscribe_listens()
 
     def subscribe_listens(self):
-        self.subscribe(hikari.MessageCreateEvent, self.message_listen)
+        self.subscribe(hikari.GuildMessageCreateEvent, self.message_listen)
 
-    async def message_listen(self, event: hikari.MessageCreateEvent) -> None:
-        content = event.content
+    async def message_listen(self, event: hikari.GuildMessageCreateEvent) -> None:
+        content = event.message.content
         if event.is_bot or event.content is None:
             return
 
-        # noinspection PyUnresolvedReferences
-        client_id = event.app.cache.get_me().id
-        client_mention_string = f"<@{client_id}>"
-
-        if client_mention_string not in content:
+        # If client was pinged
+        if self.cache.get_me().id not in event.message.mentions.users:
             return
 
-        content = content.replace(client_mention_string, "").lstrip()
+        # Prepare content
+        content = clean_content(content).lstrip()
+        if not content:
+            return
 
         try:
             boltalka_phrases = await self._boltalka_api.predict([[content]])
