@@ -33,7 +33,7 @@ class BoltalkaAPI():
         responses = re.findall("'([^']+)'", json_response["responses"])
 
         return [
-            context.replace("%bot_name", self._client_name)  # TODO?: Template
+            context.replace("%bot_name", self._client_name)
             for context in responses
         ]
 
@@ -41,11 +41,18 @@ class BoltalkaAPI():
         """
         Exceptions:
             ValidationError
+            ClientResponseError
         """
         async with self._client_session.post(
             url=url,
             json=json,
         ) as response:
+            if response.status != 200:
+                raise ClientResponseError(
+                    status_code=response.status,
+                    reason=response.reason,
+                )
+
             json_response = self._json_loader(await response.text())
 
         detail = json_response.get("detail")
@@ -60,7 +67,7 @@ class BoltalkaAPI():
 
 
 class APIError(Exception):
-    ...
+    pass
 
 
 class ValidationError(APIError):
@@ -73,3 +80,13 @@ class ValidationError(APIError):
         self.message = message
         self.location = location
         self.type_ = type_
+
+
+class ClientResponseError(APIError):
+    def __init__(
+        self,
+        status_code: int,
+        reason: str
+    ) -> None:
+        self.status_code = status_code
+        self.reason = reason
