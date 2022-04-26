@@ -2,17 +2,18 @@ from __future__ import annotations
 
 import re
 import logging
+import textwrap
 import typing as t
 from datetime import datetime
 
 import hikari
 
-from discoboltalka.boltalka_api import (
+from .boltalka_api import (
     BoltalkaAPI,
     ValidationError,
     ClientResponseError,
 )
-from discoboltalka.models import ErrorEmbed
+from .used_objects import ErrorEmbed
 
 
 _logger = logging.getLogger("discoboltalka.boltalka_gateway_bot")
@@ -29,6 +30,8 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
         self.subscribe(hikari.GuildMessageCreateEvent, self.message_listen)
 
     async def message_listen(self, event: hikari.GuildMessageCreateEvent) -> None:
+        rest_client = event.app.rest
+
         content = event.message.content
         if event.is_bot or event.content is None:
             return
@@ -46,7 +49,8 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
             return
 
         try:
-            boltalka_phrases = await self._boltalka_api.predict([[clean_content]])
+            async with rest_client.trigger_typing(event.message.channel_id):
+                boltalka_phrases = await self._boltalka_api.predict([[clean_content]])
         except ValidationError:
             await event.message.respond(
                 embed=ErrorEmbed("Я не смогла понять ваш текст"),
@@ -62,7 +66,16 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
 
         _logger.info(f"Boltalka response: {content!r} -> {boltalka_phrase!r}")
 
-        await event.message.respond(boltalka_phrases[0])
+        clean_boltalka_phrase = textwrap.shorten(boltalka_phrase, width=2000)
+
+        await event.message.respond(
+            clean_boltalka_phrase,
+            reply=True,
+            mentions_reply=True,
+            mentions_everyone=False,
+            role_mentions=False,
+            user_mentions=False,
+        )
 
     async def _get_clean_content_from_guild_message_create_event(
         self,
