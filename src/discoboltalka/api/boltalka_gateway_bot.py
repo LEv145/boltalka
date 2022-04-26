@@ -27,9 +27,9 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
         self.subscribe_listens()
 
     def subscribe_listens(self):
-        self.subscribe(hikari.GuildMessageCreateEvent, self.message_listen)
+        self.subscribe(hikari.GuildMessageCreateEvent, self.on_guild_message_create)
 
-    async def message_listen(self, event: hikari.GuildMessageCreateEvent) -> None:
+    async def on_guild_message_create(self, event: hikari.GuildMessageCreateEvent) -> None:
         rest_client = event.app.rest
 
         content = event.message.content
@@ -41,7 +41,7 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
             return
 
         # Prepare content
-        clean_content = await self._get_clean_content_from_guild_message_create_event(
+        clean_content = await self._clean_content_from_guild_message_create_event(
             event=event,
             content=content,
         )
@@ -77,7 +77,7 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
             user_mentions=False,
         )
 
-    async def _get_clean_content_from_guild_message_create_event(
+    async def _clean_content_from_guild_message_create_event(
         self,
         event: hikari.GuildMessageCreateEvent,
         content: str,
@@ -113,13 +113,26 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
             timestamp_ = match[0]
             return str(datetime.fromtimestamp(timestamp_))
 
-        def discord_emoji_repl(_match: re.Match) -> str:
-            return ""
+        clean_content = clean_content.replace("\n", " ")
 
         clean_content = re.sub(r'<@&(\d[1-9]+)>', role_repl, clean_content)
         clean_content = re.sub(r'<#(\d[1-9]+)>', channel_repl, clean_content)
         clean_content = re.sub(r'<@!?(\d[1-9]+)>', member_repl, clean_content)
         clean_content = re.sub(r'<t:(\d)+(?::[a-zA-Z])?>', timestamp_repl, clean_content)
-        clean_content = re.sub(r'<a?:[^:]+:\d[1-9]+>', discord_emoji_repl, clean_content)
+        clean_content = re.sub(r'<a?:[^:]+:\d[1-9]+>', "", clean_content)
 
-        return clean_content.lstrip()
+        # Markdown
+        clean_content = re.sub(r'(?:[^\\]|^)\*\*\*([^*]+)\*\*\*', r'\1', clean_content)
+        clean_content = re.sub(r'(?:[^\\]|^)\*\*([^*]+)\*\*', r'\1', clean_content)
+        clean_content = re.sub(r'(?:[^\\]|^)\*([^*]+)\*', r'\1', clean_content)
+        clean_content = re.sub(r'(?:[^\\]|^)(?:[a-z]+\s)?```([^`]+)```', r'\1', clean_content)
+        clean_content = re.sub(r'(?:[^\\]|^)`([^`]+)`', r'\1', clean_content)
+        clean_content = re.sub(r'(?:[^\\]|^)__([^_]+)__', r'\1', clean_content)
+        clean_content = re.sub(r'(?:[^\\]|^)~~([^~]+)~~', r'\1', clean_content)
+        clean_content = re.sub(r'(?:[^\\]|^)\|\|([^|]+)\|\|', r'\1', clean_content)
+        clean_content = re.sub(r'(?:[^\\]|^)>>>\ ([^>]+)', r'\1', clean_content)
+        clean_content = re.sub(r'(?:[^\\]|^)>\ ([^>]+)$', r'\1', clean_content)
+
+        clean_content = clean_content.strip()
+
+        return clean_content
