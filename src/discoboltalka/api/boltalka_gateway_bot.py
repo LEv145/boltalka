@@ -115,11 +115,11 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
 
         clean_content = clean_content.replace("\n", " ")
 
-        clean_content = re.sub(r'<@&(\d[1-9]+)>', role_repl, clean_content)
-        clean_content = re.sub(r'<#(\d[1-9]+)>', channel_repl, clean_content)
-        clean_content = re.sub(r'<@!?(\d[1-9]+)>', member_repl, clean_content)
+        clean_content = re.sub(r'<@&([1-9]\d+)>', role_repl, clean_content)
+        clean_content = re.sub(r'<#([1-9]\d+)>', channel_repl, clean_content)
+        clean_content = re.sub(r'<@!?([1-9]\d+)>', member_repl, clean_content)
         clean_content = re.sub(r'<t:(\d)+(?::[a-zA-Z])?>', timestamp_repl, clean_content)
-        clean_content = re.sub(r'<a?:[^:]+:\d[1-9]+>', "", clean_content)
+        clean_content = re.sub(r'<a?:[^:]+:[1-9]\d+>', "", clean_content)
 
         # Markdown
         clean_content = re.sub(r'(?:[^\\]|^)\*\*\*([^*]+)\*\*\*', r'\1', clean_content)
