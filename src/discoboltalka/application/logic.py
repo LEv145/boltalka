@@ -22,7 +22,7 @@ async def async_main() -> None:
     bot = BoltalkaGatewayBot(
         token=config.bot_config.token,
         boltalka_api=boltalka_api,
-        intents=hikari.Intents.GUILD_MESSAGES,
+        intents=hikari.Intents.GUILD_MESSAGES | hikari.Intents.GUILDS,
     )
 
     try:

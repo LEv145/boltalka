@@ -37,7 +37,7 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
             return
 
         # If client was pinged
-        if self.cache.get_me().id not in event.message.mentions.users:
+        if event.app.cache.get_me().id not in event.message.mentions.users:
             return
 
         # Prepare content
@@ -64,7 +64,7 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
 
         boltalka_phrase = boltalka_phrases[0]
 
-        _logger.info(f"Boltalka response: {content!r} -> {boltalka_phrase!r}")
+        _logger.info(f"Boltalka response: {clean_content!r} -> {boltalka_phrase!r}")
 
         clean_boltalka_phrase = textwrap.shorten(boltalka_phrase, width=2000)
 
@@ -82,11 +82,14 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
         event: hikari.GuildMessageCreateEvent,
         content: str,
     ) -> str:
-        guild = event.get_guild()
+        guild = event.get_guild()  # TODO: Check
         clean_content = content
 
         def member_repl(match: re.Match) -> str:
-            user_id = match[0]
+            user_id = match[1]
+
+            if user_id == str(event.app.cache.get_me().id):
+                return ""
 
             member = guild.get_member(user=user_id)
             if member is not None:
@@ -94,7 +97,7 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
             return ""
 
         def role_repl(match: re.Match) -> str:
-            role_id = match[0]
+            role_id = match[1]
 
             role = guild.get_role(role=role_id)
             if role is not None:
@@ -102,7 +105,7 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
             return ""
 
         def channel_repl(match: re.Match) -> str:
-            channel_id = match[0]
+            channel_id = match[1]
 
             channel = guild.get_channel(channel=channel_id)
             if channel is not None:
@@ -110,7 +113,7 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
             return ""
 
         def timestamp_repl(match: re.Match) -> str:
-            timestamp_ = match[0]
+            timestamp_ = match[1]
             return str(datetime.fromtimestamp(timestamp_))
 
         clean_content = clean_content.replace("\n", " ")
