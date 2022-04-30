@@ -14,9 +14,6 @@ from discoboltalka.api import (
 from .config import TomlConfigLoader
 
 
-logging.getLogger("discoboltalka").setLevel(logging.DEBUG)
-
-
 async def async_main() -> None:
     config_loader = TomlConfigLoader(Path("config.toml"))
     config = config_loader.load()
