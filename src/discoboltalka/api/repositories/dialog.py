@@ -6,7 +6,7 @@ from ..abstract_repositories import AbstractDialogRepository
 
 
 class DialogRepository(AbstractDialogRepository):
-    def __init__(self, max_len: int) -> None:
+    def __init__(self, max_len: int = 1000) -> None:
         self._contexts = deque(maxlen=max_len * 2)  # Context = user_request + bot_response
         self._lock = asyncio.Lock()
 
