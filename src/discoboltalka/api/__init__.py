@@ -1,10 +1,6 @@
 from .used_objects import ErrorEmbed
-from .boltalka_api import BoltalkaAPI
-from .boltalka_gateway_bot import BoltalkaGatewayBot
+from .modules.boltalka_api import BoltalkaAPI
+from .events import BoltalkaEvent
+from .repositories import DialogRepository
+from .abstract_repositories import AbstractDialogRepository
 
-
-__all__ = (
-    "BoltalkaAPI",
-    "BoltalkaGatewayBot",
-    "ErrorEmbed",
-)

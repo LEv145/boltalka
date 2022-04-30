@@ -3,54 +3,62 @@ from __future__ import annotations
 import re
 import logging
 import textwrap
-import typing as t
 from datetime import datetime
 
 import hikari
 
-from .boltalka_api import (
+from .modules.boltalka_api import (
     BoltalkaAPI,
     ValidationError,
     ClientResponseError,
 )
 from .used_objects import ErrorEmbed
+from .abstract_repositories import AbstractDialogRepository
 
 
-_logger = logging.getLogger("discoboltalka.boltalka_gateway_bot")
+_logger = logging.getLogger(__name__)
 
 
-# noinspection PyAbstractClass
-class BoltalkaGatewayBot(hikari.GatewayBot):
-    def __init__(self, boltalka_api: BoltalkaAPI, token: str, **kwargs: t.Any) -> None:
-        super().__init__(token, **kwargs)
+class BoltalkaEvent():
+    def __init__(
+        self,
+        boltalka_api: BoltalkaAPI,
+        dialog_repository: AbstractDialogRepository,
+    ) -> None:
         self._boltalka_api = boltalka_api
-        self.subscribe_listens()
-
-    def subscribe_listens(self):
-        self.subscribe(hikari.GuildMessageCreateEvent, self.on_guild_message_create)
+        self._dialog_repository = dialog_repository
 
     async def on_guild_message_create(self, event: hikari.GuildMessageCreateEvent) -> None:
         rest_client = event.app.rest
+        app = event.app
+
+        if not isinstance(app, hikari.GatewayBot):
+            raise RuntimeError("App should be 'hikari.GatewayBot'")
 
         content = event.message.content
         if event.is_bot or event.content is None:
             return
 
         # If client was pinged
-        if event.app.cache.get_me().id not in event.message.mentions.users:
+        if app.cache.get_me().id not in event.message.mentions.users:
             return
 
         # Prepare content
-        clean_content = await self._clean_content_from_guild_message_create_event(
+        user_request = await self._clean_content_from_guild_message_create_event(
             event=event,
             content=content,
         )
-        if not clean_content:
+        if not user_request:
             return
+
+        last_context = await self._dialog_repository.get_last_contexts()
+        context = last_context + [user_request]
+
+        _logger.debug(f"Boltalka context: {context}")
 
         try:
             async with rest_client.trigger_typing(event.message.channel_id):
-                boltalka_phrases = await self._boltalka_api.predict([[clean_content]])
+                boltalka_phrases = await self._boltalka_api.predict([context])
         except ValidationError:
             await event.message.respond(
                 embed=ErrorEmbed("Я не смогла понять ваш текст"),
@@ -62,11 +70,15 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
             )
             return
 
-        boltalka_phrase = boltalka_phrases[0]
+        bot_response = boltalka_phrases[0]
+        _logger.info(f"Boltalka response: {user_request!r} -> {bot_response!r}")
 
-        _logger.info(f"Boltalka response: {clean_content!r} -> {boltalka_phrase!r}")
+        await self._dialog_repository.add_context(
+            user_request,
+            bot_response,
+        )
 
-        clean_boltalka_phrase = textwrap.shorten(boltalka_phrase, width=2000)
+        clean_boltalka_phrase = textwrap.shorten(bot_response, width=2000)
 
         await event.message.respond(
             clean_boltalka_phrase,
@@ -84,11 +96,15 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
     ) -> str:
         guild = event.get_guild()  # TODO: Check
         clean_content = content
+        app = event.app
+
+        if not isinstance(app, hikari.GatewayBot):
+            raise RuntimeError("App should be 'hikari.GatewayBot'")
 
         def member_repl(match: re.Match) -> str:
             user_id = match[1]
 
-            if user_id == str(event.app.cache.get_me().id):
+            if user_id == str(app.cache.get_me().id):
                 return ""
 
             member = guild.get_member(user=user_id)
@@ -125,16 +141,16 @@ class BoltalkaGatewayBot(hikari.GatewayBot):
         clean_content = re.sub(r'<a?:[^:]+:[1-9]\d+>', "", clean_content)
 
         # Markdown
-        clean_content = re.sub(r'(?:[^\\]|^)\*\*\*([^*]+)\*\*\*', r'\1', clean_content)
-        clean_content = re.sub(r'(?:[^\\]|^)\*\*([^*]+)\*\*', r'\1', clean_content)
-        clean_content = re.sub(r'(?:[^\\]|^)\*([^*]+)\*', r'\1', clean_content)
-        clean_content = re.sub(r'(?:[^\\]|^)(?:[a-z]+\s)?```([^`]+)```', r'\1', clean_content)
-        clean_content = re.sub(r'(?:[^\\]|^)`([^`]+)`', r'\1', clean_content)
-        clean_content = re.sub(r'(?:[^\\]|^)__([^_]+)__', r'\1', clean_content)
-        clean_content = re.sub(r'(?:[^\\]|^)~~([^~]+)~~', r'\1', clean_content)
-        clean_content = re.sub(r'(?:[^\\]|^)\|\|([^|]+)\|\|', r'\1', clean_content)
-        clean_content = re.sub(r'(?:[^\\]|^)>>>\ ([^>]+)', r'\1', clean_content)
-        clean_content = re.sub(r'(?:[^\\]|^)>\ ([^>]+)$', r'\1', clean_content)
+        # clean_content = re.sub(r'(?:[^\\]|^)\*\*\*([^*]+)\*\*\*', r'\1', clean_content)
+        # clean_content = re.sub(r'(?:[^\\]|^)\*\*([^*]+)\*\*', r'\1', clean_content)
+        # clean_content = re.sub(r'(?:[^\\]|^)\*([^*]+)\*', r'\1', clean_content)
+        # clean_content = re.sub(r'(?:[^\\]|^)(?:[a-z]+\s)?```([^`]+)```', r'\1', clean_content)
+        # clean_content = re.sub(r'(?:[^\\]|^)`([^`]+)`', r'\1', clean_content)
+        # clean_content = re.sub(r'(?:[^\\]|^)__([^_]+)__', r'\1', clean_content)
+        # clean_content = re.sub(r'(?:[^\\]|^)~~([^~]+)~~', r'\1', clean_content)
+        # clean_content = re.sub(r'(?:[^\\]|^)\|\|([^|]+)\|\|', r'\1', clean_content)
+        # clean_content = re.sub(r'(?:[^\\]|^)>>>\ ([^>]+)', r'\1', clean_content)
+        # clean_content = re.sub(r'(?:[^\\]|^)>\ ([^>]+)$', r'\1', clean_content)
 
         clean_content = clean_content.strip()
 

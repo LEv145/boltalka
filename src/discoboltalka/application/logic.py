@@ -1,12 +1,20 @@
 import asyncio
 from pathlib import Path
 
+import logging
 import aiohttp
 import hikari
 
+from discoboltalka.api import (
+    BoltalkaAPI,
+    BoltalkaEvent,
+    DialogRepository,
+)
+
 from .config import TomlConfigLoader
-from discoboltalka.api.boltalka_api import BoltalkaAPI
-from discoboltalka.api.boltalka_gateway_bot import BoltalkaGatewayBot
+
+
+logging.getLogger("discoboltalka").setLevel(logging.DEBUG)
 
 
 async def async_main() -> None:
@@ -18,11 +26,18 @@ async def async_main() -> None:
         client_session=client_session,
         client_name=config.boltalka_config.client_name,
     )
-
-    bot = BoltalkaGatewayBot(
-        token=config.bot_config.token,
+    boltalka_event = BoltalkaEvent(
         boltalka_api=boltalka_api,
+        dialog_repository=DialogRepository(),
+    )
+
+    bot = hikari.GatewayBot(
+        token=config.bot_config.token,
         intents=hikari.Intents.GUILD_MESSAGES | hikari.Intents.GUILDS,
+    )
+    bot.subscribe(
+        hikari.GuildMessageCreateEvent,
+        boltalka_event.on_guild_message_create,
     )
 
     try:
