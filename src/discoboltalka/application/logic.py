@@ -1,7 +1,6 @@
 import asyncio
 from pathlib import Path
 
-import logging
 import aiohttp
 import hikari
 
