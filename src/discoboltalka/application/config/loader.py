@@ -7,6 +7,7 @@ from .models import (
     MainConfig,
     BotConfig,
     BoltalkaConfig,
+    MessageEventConfig,
 )
 
 import toml
@@ -45,9 +46,19 @@ class TomlConfigLoader(ABCLoader):
         except KeyError as exception:
             raise InvalidConfig() from exception
 
+        try:
+            message_event_raw_config = config_raw_data["message_event"]
+            message_event_config = MessageEventConfig(
+                channels_for_conversation=message_event_raw_config.get("channels_for_conversation"),
+            )
+        except KeyError as exception:
+            raise InvalidConfig() from exception
+
+
         return MainConfig(
             bot_config=bot_config,
             boltalka_config=boltalka_config,
+            message_event_config=message_event_config,
         )
 
 
