@@ -7,15 +7,19 @@ from dataclasses import dataclass
 class MainConfig():
     bot_config: BotConfig
     boltalka_config: BoltalkaConfig
+    message_event_config: MessageEventConfig
 
 
 @dataclass
 class BotConfig():
     token: str
-    channels_for_conversation: list | None
 
 
 @dataclass
 class BoltalkaConfig():
     client_name: str
 
+
+@dataclass
+class MessageEventConfig():
+    channels_for_conversation: list | None

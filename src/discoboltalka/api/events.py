@@ -19,7 +19,7 @@ from .abstract_repositories import AbstractDialogRepository
 _logger = logging.getLogger(__name__)
 
 
-class BoltalkaEvent():
+class BoltalkaEvents():
     def __init__(
         self,
         boltalka_api: BoltalkaAPI,
@@ -35,18 +35,19 @@ class BoltalkaEvent():
             raise RuntimeError("App should be 'hikari.GatewayBot'")
 
 
-        if event.is_bot:
-            return
-
-        if event.message.content is None:
-            return
-
-        if self._channels_for_conversation is not None:
-            if int(event.message.channel_id) not in self._channels_for_conversation:
-                return
-
-        # If client was pinged
-        if event.app.cache.get_me().id not in event.message.mentions.users:
+        if (
+            event.is_bot
+            or event.message.content is None
+            # Favorable conditions
+            or (
+                # If client wasn't pinged
+                event.app.cache.get_me().id not in event.message.mentions.users
+                and (
+                    self._channels_for_conversation is not None
+                    and int(event.message.channel_id) not in self._channels_for_conversation
+                )
+            )
+        ):
             return
 
 

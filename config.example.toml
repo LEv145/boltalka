@@ -1,10 +1,13 @@
 [bot]
 token = "..."
-channels_for_conversation = [
-    948183196439289866,
-    947954894990606447,
-]  # Optional
 
 
 [boltalka]
 client_name = "..."
+
+
+[message_event]
+channels_for_conversation = [
+    948183196439289866,
+    947954894990606447,
+]  # Optional
