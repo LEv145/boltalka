@@ -25,6 +25,7 @@ async def async_main() -> None:
     boltalka_event = BoltalkaEvent(
         boltalka_api=boltalka_api,
         dialog_repository=DialogRepository(),
+        channels_for_conversation=config.bot_config.channels_for_conversation,
     )
 
     bot = hikari.GatewayBot(

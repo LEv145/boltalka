@@ -24,29 +24,36 @@ class BoltalkaEvent():
         self,
         boltalka_api: BoltalkaAPI,
         dialog_repository: AbstractDialogRepository,
+        channels_for_conversation: list | None = None,
     ) -> None:
         self._boltalka_api = boltalka_api
         self._dialog_repository = dialog_repository
+        self._channels_for_conversation = channels_for_conversation
 
     async def on_guild_message_create(self, event: hikari.GuildMessageCreateEvent) -> None:
-        rest_client = event.app.rest
-        app = event.app
-
-        if not isinstance(app, hikari.GatewayBot):
+        if not isinstance(event.app, hikari.GatewayBot):
             raise RuntimeError("App should be 'hikari.GatewayBot'")
 
-        content = event.message.content
-        if event.is_bot or event.content is None:
+
+        if event.is_bot:
             return
 
-        # If client was pinged
-        if app.cache.get_me().id not in event.message.mentions.users:
+        if event.message.content is None:
             return
+
+        if self._channels_for_conversation is not None:
+            if int(event.message.channel_id) not in self._channels_for_conversation:
+                return
+
+        # If client was pinged
+        if event.app.cache.get_me().id not in event.message.mentions.users:
+            return
+
 
         # Prepare content
         user_request = await self._clean_content_from_guild_message_create_event(
             event=event,
-            content=content,
+            content=event.message.content,
         )
         if not user_request:
             return
@@ -57,7 +64,7 @@ class BoltalkaEvent():
         _logger.debug(f"Boltalka context: {context}")
 
         try:
-            async with rest_client.trigger_typing(event.message.channel_id):
+            async with event.app.rest.trigger_typing(event.message.channel_id):
                 boltalka_phrases = await self._boltalka_api.predict([context])
         except ValidationError:
             await event.message.respond(

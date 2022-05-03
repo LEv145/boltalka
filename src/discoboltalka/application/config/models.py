@@ -12,6 +12,7 @@ class MainConfig():
 @dataclass
 class BotConfig():
     token: str
+    channels_for_conversation: list | None
 
 
 @dataclass

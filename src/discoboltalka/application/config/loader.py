@@ -33,6 +33,7 @@ class TomlConfigLoader(ABCLoader):
             bot_raw_config = config_raw_data["bot"]
             bot_config = BotConfig(
                 token=bot_raw_config["token"],
+                channels_for_conversation=bot_raw_config.get("channels_for_conversation"),
             )
         except KeyError as exception:
             raise InvalidConfig() from exception
