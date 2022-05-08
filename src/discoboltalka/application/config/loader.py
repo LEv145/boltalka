@@ -8,6 +8,7 @@ from .models import (
     BotConfig,
     BoltalkaConfig,
     MessageEventConfig,
+    PostgresConfig,
 )
 
 import toml
@@ -49,7 +50,20 @@ class TomlConfigLoader(ABCLoader):
         try:
             message_event_raw_config = config_raw_data["message_event"]
             message_event_config = MessageEventConfig(
-                channels_for_conversation=message_event_raw_config.get("channels_for_conversation"),
+                channels_for_conversation=message_event_raw_config.get(
+                    "channels_for_conversation",
+                ),
+            )
+        except KeyError as exception:
+            raise InvalidConfig() from exception
+
+        try:
+            postgres_raw_config = config_raw_data["postgres"]
+            postgres_config = PostgresConfig(
+                database_name=postgres_raw_config["database_name"],
+                user=postgres_raw_config["user"],
+                password=postgres_raw_config["password"],
+                host=postgres_raw_config["host"],
             )
         except KeyError as exception:
             raise InvalidConfig() from exception
@@ -59,6 +73,7 @@ class TomlConfigLoader(ABCLoader):
             bot_config=bot_config,
             boltalka_config=boltalka_config,
             message_event_config=message_event_config,
+            postgres_config=postgres_config,
         )
 
 

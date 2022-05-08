@@ -7,7 +7,6 @@ RUN pip install poetry
 
 COPY poetry.lock pyproject.toml /usr/app/
 COPY src /usr/app/
-COPY config.toml /usr/app/
 
 RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi
 

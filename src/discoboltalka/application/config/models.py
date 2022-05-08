@@ -8,6 +8,7 @@ class MainConfig():
     bot_config: BotConfig
     boltalka_config: BoltalkaConfig
     message_event_config: MessageEventConfig
+    postgres_config: PostgresConfig
 
 
 @dataclass
@@ -23,3 +24,11 @@ class BoltalkaConfig():
 @dataclass
 class MessageEventConfig():
     channels_for_conversation: list | None
+
+
+@dataclass
+class PostgresConfig():
+    database_name: str
+    user: str
+    password: str
+    host: str

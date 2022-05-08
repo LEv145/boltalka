@@ -1,0 +1,25 @@
+
+version: "3.9"
+
+
+services:
+    discoboltalka:
+        build:
+            context: ../..
+        links:
+            - postgres
+        volumes:
+            - ../../work_dir/config.toml:/usr/app/config.toml
+
+    postgres:
+        image: postgres:14
+        environment:
+            POSTGRES_DB: "discoboltalka"
+            POSTGRES_USER: "discoboltalka_user"
+            POSTGRES_PASSWORD: "A4VJ4G1mbwKH"
+        expose:
+            - "5432"
+        ports:
+            - "5432:5432"
+        volumes:
+            - ../../work_dir/postgresql_data:/var/lib/postgresql/data
