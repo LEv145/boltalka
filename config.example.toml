@@ -14,3 +14,5 @@ channels_for_conversation = [
 database_name = "discoboltalka"
 user = "discoboltalka_user"
 password = "A4VJ4G1mbwKH"
+host = "postgresql:5432"
+
