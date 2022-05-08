@@ -1,13 +1,18 @@
 [bot]
 token = "..."
 
-
 [boltalka]
 client_name = "..."
-
 
 [message_event]
 channels_for_conversation = [
     948183196439289866,
     947954894990606447,
 ]  # Optional
+
+[postgres]
+database_name = "discoboltalka"
+user = "discoboltalka_user"
+password = "A4VJ4G1mbwKH"
+host = "postgresql:5432"
+

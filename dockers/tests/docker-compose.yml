@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+    postgres:
+        image: postgres:14
+        environment:
+            POSTGRES_DB: "discoboltalka"
+            POSTGRES_USER: "discoboltalka_user"
+            POSTGRES_PASSWORD: "xxVcdmcR3AUB"
+        ports:
+            - "5433:5432"

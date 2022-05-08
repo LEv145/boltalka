@@ -7,13 +7,13 @@ from datetime import datetime
 
 import hikari
 
-from .modules.boltalka_api import (
+from ..modules.boltalka_api import (
     BoltalkaAPI,
     ValidationError,
     ClientResponseError,
 )
-from .used_objects import ErrorEmbed
-from .abstract_repositories import AbstractDialogRepository
+from ..adapters.embeds import ErrorEmbed
+from ..abstract_repositories import AbstractDialogRepository
 
 
 _logger = logging.getLogger(__name__)
@@ -34,22 +34,19 @@ class BoltalkaEvents():
         if not isinstance(event.app, hikari.GatewayBot):
             raise RuntimeError("App should be 'hikari.GatewayBot'")
 
-
+        if event.is_bot:
+            return
+        if event.message.content is None:
+            return
         if (
-            event.is_bot
-            or event.message.content is None
-            # Favorable conditions
-            or (
-                # If client wasn't pinged
-                event.app.cache.get_me().id not in event.message.mentions.users
-                and (
-                    self._channels_for_conversation is not None
-                    and int(event.message.channel_id) not in self._channels_for_conversation
-                )
+            # If client wasn't pinged
+            event.app.cache.get_me().id not in event.message.mentions.users
+            and (
+                self._channels_for_conversation is not None
+                and int(event.message.channel_id) not in self._channels_for_conversation
             )
         ):
             return
-
 
         # Prepare content
         user_request = await self._clean_content_from_guild_message_create_event(
@@ -59,7 +56,9 @@ class BoltalkaEvents():
         if not user_request:
             return
 
-        last_context = await self._dialog_repository.get_last_contexts()
+        last_context = await self._dialog_repository.get_last_contexts(
+            user_id=event.author_id,
+        )
         context = last_context + [user_request]
 
         _logger.debug(f"Boltalka context: {context}")
@@ -82,8 +81,9 @@ class BoltalkaEvents():
         _logger.info(f"Boltalka response: {user_request!r} -> {bot_response!r}")
 
         await self._dialog_repository.add_context(
-            user_request,
-            bot_response,
+            user_id=event.author_id,
+            user_request=user_request,
+            bot_response=bot_response,
         )
 
         clean_boltalka_phrase = textwrap.shorten(bot_response, width=2000)

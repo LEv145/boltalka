@@ -3,6 +3,7 @@ from .models import (
     BotConfig,
     BoltalkaConfig,
     MessageEventConfig,
+    PostgresConfig,
 )
 from .loader import (
     ABCLoader,
