@@ -1,7 +1,7 @@
 import abc
 
 
-class AbstractDialogRepository(abc.ABC):
+class ABCDialogQueryAPI(abc.ABC):
     @abc.abstractmethod
     async def get_last_contexts(self, user_id: int) -> list[str]:
         pass
