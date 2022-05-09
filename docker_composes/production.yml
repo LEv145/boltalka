@@ -6,7 +6,7 @@ services:
         depends_on:
             - postgresql
         volumes:
-            - ../../work_dir/config.toml:/usr/app/config.toml
+            - ../work_dir/config.toml:/usr/app/config.toml
 
     postgresql:
         image: postgres:14
@@ -14,7 +14,5 @@ services:
             POSTGRES_DB: "discoboltalka"
             POSTGRES_USER: "discoboltalka_user"
             POSTGRES_PASSWORD: "A4VJ4G1mbwKH"
-        ports:
-            - "5432:5432"
         volumes:
-            - ../../work_dir/postgresql_data:/var/lib/postgresql/data
+            - ../work_dir/postgresql_data:/var/lib/postgresql/data
