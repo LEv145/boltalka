@@ -5,10 +5,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select, insert
 
 from discoboltalka.api.adapters.orm import sqlalchemy_metadata
-from discoboltalka.api.query_apis.impl.dialog_repository import (
+from discoboltalka.api.query_apis.impl.dialog import (
     context_table,
     dialog_table,
-    DialogRepository,
+    DialogQueryAPI,
 )
 
 
@@ -23,7 +23,7 @@ class TestDialogRepository(IsolatedAsyncioTestCase):
             await connect.run_sync(sqlalchemy_metadata.create_all)
 
         self._session: AsyncSession = sessionmaker(bind=engine, class_=AsyncSession)()
-        self._repository = DialogRepository(session=self._session, max_len=5)
+        self._repository = DialogQueryAPI(session=self._session, max_len=5)
 
     async def asyncTearDown(self) -> None:
         await self._session.close()
