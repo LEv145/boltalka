@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select, insert
 
 from discoboltalka.api.adapters.orm import sqlalchemy_metadata
-from discoboltalka.api.repositories.dialog_repository import (
+from discoboltalka.api.query_apis.impl.dialog_repository import (
     context_table,
     dialog_table,
     DialogRepository,

@@ -13,7 +13,7 @@ from ..modules.boltalka_api import (
     ClientResponseError,
 )
 from ..adapters.embeds import ErrorEmbed
-from ..abstract_repositories import AbstractDialogRepository
+from ..query_apis import ABCDialogQueryAPI
 
 
 _logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ class BoltalkaEvents():
     def __init__(
         self,
         boltalka_api: BoltalkaAPI,
-        dialog_repository: AbstractDialogRepository,
+        dialog_repository: ABCDialogQueryAPI,
         channels_for_conversation: list | None = None,
     ) -> None:
         self._boltalka_api = boltalka_api

@@ -6,8 +6,8 @@ import itertools
 from sqlalchemy.sql import select
 from sqlalchemy.dialects.postgresql import insert
 
-from ..adapters import dialog_table, context_table
-from ..abstract_repositories import AbstractDialogRepository
+from ..abc import ABCDialogQueryAPI
+from ...adapters import dialog_table, context_table
 
 
 if t.TYPE_CHECKING:
@@ -18,7 +18,7 @@ if t.TYPE_CHECKING:
     insert = Insert
 
 
-class DialogRepository(AbstractDialogRepository):
+class DialogQueryAPI(ABCDialogQueryAPI):
     def __init__(
         self,
         session: AsyncSession,

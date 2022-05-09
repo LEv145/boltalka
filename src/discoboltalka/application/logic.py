@@ -7,7 +7,7 @@ import hikari
 from discoboltalka.api import (
     BoltalkaAPI,
     BoltalkaEvents,
-    DialogRepository,
+    DialogQueryAPI,
 )
 
 from .providers import (
@@ -33,7 +33,7 @@ async def async_main() -> None:
     message_event_config = config.message_event_config
     boltalka_event = BoltalkaEvents(
         boltalka_api=boltalka_api,
-        dialog_repository=DialogRepository(session=postgres_session),
+        dialog_repository=DialogQueryAPI(session=postgres_session),
         channels_for_conversation=message_event_config.channels_for_conversation,
     )
 

@@ -1,6 +1,3 @@
-from .abstract_repositories import (
-    AbstractDialogRepository,
-)
 from .adapters import (
     ErrorEmbed,
     context_table,
@@ -16,17 +13,18 @@ from .modules import (
     ClientResponseError,
     ValidationError,
 )
-from .repositories import (
-    DialogRepository,
+from .query_apis import (
+    ABCDialogQueryAPI,
+    DialogQueryAPI,
 )
 
 __all__ = [
+    "ABCDialogQueryAPI",
     "APIError",
-    "AbstractDialogRepository",
     "BoltalkaAPI",
     "BoltalkaEvents",
     "ClientResponseError",
-    "DialogRepository",
+    "DialogQueryAPI",
     "ErrorEmbed",
     "ValidationError",
     "context_table",

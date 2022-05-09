@@ -1,4 +1,4 @@
-from .boltalka_events import (
+from .boltalka import (
     BoltalkaEvents,
 )
 
