@@ -1,4 +1,4 @@
-from .dialog_query_api import (
+from .dialog import (
     DialogQueryAPI,
 )
 

@@ -1,4 +1,4 @@
-from .abc_dialog_query_api import (
+from .dialog import (
     ABCDialogQueryAPI,
 )
 
