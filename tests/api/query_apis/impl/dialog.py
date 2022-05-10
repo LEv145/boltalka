@@ -14,19 +14,23 @@ from discoboltalka.api.query_apis.impl.dialog import (
 
 class TestDialogRepository(IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
-        engine = create_async_engine(
+        self.engine = create_async_engine(
             "postgresql+asyncpg://discoboltalka_user:xxVcdmcR3AUB@127.0.0.1:5433/discoboltalka",
         )
 
-        async with engine.begin() as connect:
-            await connect.run_sync(sqlalchemy_metadata.drop_all)
-            await connect.run_sync(sqlalchemy_metadata.create_all)
+        async with self.engine.begin() as connection:
+            await connection.run_sync(sqlalchemy_metadata.create_all)
 
-        self._session: AsyncSession = sessionmaker(bind=engine, class_=AsyncSession)()
+        self._session: AsyncSession = sessionmaker(bind=self.engine, class_=AsyncSession)()
         self._repository = DialogQueryAPI(session=self._session, max_len=5)
 
     async def asyncTearDown(self) -> None:
         await self._session.close()
+
+        async with self.engine.begin() as connection:
+            await connection.run_sync(sqlalchemy_metadata.drop_all)
+
+        await self.engine.dispose()
 
     async def test_get_last_contexts_without_dialog(self) -> None:
         user_id = 501089151089770517
