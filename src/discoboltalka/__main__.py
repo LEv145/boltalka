@@ -1,4 +1,4 @@
-from discoboltalka.application import main
+from discoboltalka.app import main
 
 
 if __name__ == "__main__":
