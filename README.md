@@ -5,6 +5,9 @@
 Discord bot for [Demo Болталка](https://sbercloud.ru/ru/datahub/rugpt3family/demo-boltalka)
 (Dialog model-interlocutor, chit-chat based on ruGPT-3)
 
+![Preview 1](images/preview_1.png)
+![Preview 2](images/preview_2.png)
+
 ## Setup
 
 ### Docker
