@@ -2,12 +2,12 @@ version: "3.9"
 
 services:
     discoboltalka:
-        build: ../..
+        build: ..
         image: lev145/discoboltalka
         depends_on:
             - postgresql
         volumes:
-            - ../../work_dir/production/config.toml:/usr/app/config.toml
+            - ../work_dir/production/config.toml:/usr/app/config.toml
         restart: unless-stopped
 
     postgresql:
@@ -17,5 +17,5 @@ services:
             POSTGRES_USER: "discoboltalka_user"
             POSTGRES_PASSWORD: "A4VJ4G1mbwKH"
         volumes:
-            - ../../work_dir/production/postgresql_data:/var/lib/postgresql/data
+            - ../work_dir/production/postgresql_data:/var/lib/postgresql/data
         restart: unless-stopped
